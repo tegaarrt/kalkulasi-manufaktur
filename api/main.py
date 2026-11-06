@@ -151,3 +151,32 @@ def kalkulasi_waktu_po(data: POInput):
     return {
         "total_jam_po": round(jam_po, 2)
     }
+
+@app.post("/api/kalkulasi/listrik-po")
+def kalkulasi_listrik_po(data: ListrikPOInput):
+    kwh_total_jam = ((data.ampere * data.volt) / 1000) * data.qty_mesin
+    jam_po = (data.qty_po * data.ct_per_pcs) / 3600
+    total_kwh_po = kwh_total_jam * jam_po
+    total_biaya_po = total_kwh_po * data.harga_listrik
+
+    return {
+        "kwh_base": round(kwh_total_jam, 2),
+        "jam_po": round(jam_po, 2),
+        "total_kwh_po": round(total_kwh_po, 2),
+        "total_biaya_po": round(total_biaya_po, 2)
+    }
+
+@app.post("/api/kalkulasi/gas-po")
+def kalkulasi_gas_po(data: GasPOInput):
+    liter_per_jam_efektif = (data.flow_gas * 60) * 0.85
+    m3_per_jam_total = (liter_per_jam_efektif / 1000) * data.qty_mesin
+    jam_po = (data.qty_po * data.ct_per_pcs) / 3600
+    total_m3_po = m3_per_jam_total * jam_po
+    total_biaya_po = total_m3_po * data.harga_gas
+
+    return {
+        "m3_base": round(m3_per_jam_total, 3),
+        "jam_po": round(jam_po, 2),
+        "total_m3_po": round(total_m3_po, 3),
+        "total_biaya_po": round(total_biaya_po, 2)
+    }
