@@ -8,7 +8,7 @@ const withPWA = withPWAInit({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Tambahkan konfigurasi lain jika ada
+  turbopack: {}, // Mencegah error PWA tanpa mematikan Tailwind
 };
 
 export default withPWA(nextConfig);

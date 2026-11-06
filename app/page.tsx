@@ -426,12 +426,12 @@ export default function ManufacturingDashboard() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
 
-  // Harga tetap memiliki nilai default
+  // Harga diset dengan nilai default
   const [hargaListrik, setHargaListrik] = useState<number | string>(1500);
   const [hargaGas, setHargaGas] = useState<number | string>(11000);
   const [hargaMaterial, setHargaMaterial] = useState<number | string>(15000);
 
-  // Input Parameter diinisialisasi sebagai string kosong (bersih tanpa angka 0)
+  // Input parameter diinisialisasi sebagai string kosong (bersih tanpa angka 0)
   const [qtyMesin, setQtyMesin] = useState<number | string>("");
   const [qtyPO, setQtyPO] = useState<number | string>("");
   const [ctPerPcs, setCtPerPcs] = useState<number | string>("");
@@ -448,6 +448,7 @@ export default function ManufacturingDashboard() {
 
   const [hasil, setHasil] = useState<any>({});
 
+  // Fungsi mencegah error angka dan mengizinkan kotak kosong
   const handleNumber = (val: string, setter: React.Dispatch<React.SetStateAction<number | string>>) => {
     if (val === '') {
       setter(''); 
@@ -482,7 +483,7 @@ export default function ManufacturingDashboard() {
     setOpenMenu(openMenu === menuId ? null : menuId);
   };
 
-  // PENTING: Perhitungan sekarang berjalan 100% OFFLINE (Tanpa Backend API)
+  // Kalkulasi berjalan murni di browser HP (Offline)
   const hitungKalkulasi = () => {
     const numQtyMesin = Number(qtyMesin);
     const numQtyPO = Number(qtyPO);
