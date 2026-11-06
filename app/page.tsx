@@ -39,6 +39,7 @@ export default function ManufacturingDashboard() {
   const [hasil, setHasil] = useState<any>({});
   const [isLoading, setIsLoading] = useState(false);
 
+  // Auto-ubah massa jenis berdasarkan pilihan, TAPI tetap bisa diedit manual
   const handleMaterialChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setJenisMaterial(val);
@@ -80,8 +81,8 @@ export default function ManufacturingDashboard() {
   };
 
   const menuCategories = [
-    { id: 'listrik', title: 'Kalkulasi Listrik', icon: Zap, submenus: [{ id: 1, name: "Listrik Standar" }, { id: 2, name: "Listrik + Estimasi PO" }] },
-    { id: 'gas', title: 'Kalkulasi Gas', icon: Flame, submenus: [{ id: 3, name: "Gas Standar" }, { id: 4, name: "Gas + Estimasi PO" }] },
+    { id: 'listrik', title: 'Menu Listrik', icon: Zap, submenus: [{ id: 1, name: "Listrik Standar" }, { id: 2, name: "Listrik + Estimasi PO" }] },
+    { id: 'gas', title: 'Menu Gas', icon: Flame, submenus: [{ id: 3, name: "Gas Standar" }, { id: 4, name: "Gas + Estimasi PO" }] },
     { id: 'material', title: 'Berat Material', icon: Package, submenus: [{ id: 5, name: "Plate" }, { id: 6, name: "Pipe" }] },
     { id: 'po', title: 'Menghitung PO', icon: Clock, submenus: [{ id: 7, name: "Kalkulasi Waktu PO" }] }
   ];
@@ -107,13 +108,14 @@ export default function ManufacturingDashboard() {
         ${isMobileSidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0'} 
         ${isDesktopCollapsed ? 'lg:w-20' : 'lg:w-64'}`}
       >
-        <div className={`p-4 flex items-center border-b border-white/10 ${isDesktopCollapsed ? 'justify-center lg:px-0' : 'justify-between lg:justify-start lg:gap-3'}`}>
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="bg-green-500 p-1.5 rounded-full shrink-0"><Database size={20} className="text-white"/></div>
-            <div className={`transition-opacity duration-300 whitespace-nowrap ${isDesktopCollapsed ? 'lg:opacity-0 lg:w-0' : 'opacity-100'}`}>
-              <h1 className="font-bold text-sm leading-tight">Kalkulasi Manufaktur</h1>
-              <p className="text-[10px] text-slate-300">Integrated Digital System</p>
-            </div>
+        {/* LOGO E-CODAPROVE-26 DI SIDEBAR */}
+        <div className={`p-4 flex items-center border-b border-white/10 h-20 ${isDesktopCollapsed ? 'justify-center lg:px-0' : 'justify-between lg:justify-start lg:gap-3'}`}>
+          <div className="flex items-center gap-3 overflow-hidden h-full w-full">
+            {!isDesktopCollapsed ? (
+              <img src="/image_11bec3.jpg" alt="E-CODAPROVE-26" className="max-h-12 object-contain mx-auto" />
+            ) : (
+              <Database size={24} className="text-blue-400 mx-auto" />
+            )}
           </div>
           <button onClick={() => setIsMobileSidebarOpen(false)} className="lg:hidden text-slate-300 hover:text-white"><X size={20} /></button>
         </div>
@@ -188,6 +190,11 @@ export default function ManufacturingDashboard() {
               <p className="text-xs md:text-sm text-slate-500">Fast • Accurate • Efficient</p>
             </div>
           </div>
+          
+          {/* LOGO BERLINDO DI HEADER KANAN */}
+          <div className="flex items-center">
+            <img src="/logo-berlindo.png" alt="PT Berlindo Mitra Utama" className="h-8 md:h-10 object-contain" />
+          </div>
         </header>
 
         <main className="flex-1 p-4 md:p-6 flex flex-col gap-6">
@@ -210,19 +217,19 @@ export default function ManufacturingDashboard() {
                   {(activeTool === 1 || activeTool === 2) && (
                     <div className="flex justify-between items-center bg-blue-50 p-2 md:p-3 rounded-md">
                       <label className="w-1/2">Harga Listrik (Rp/kWh)</label>
-                      <input type="number" value={hargaListrik} onChange={e => setHargaListrik(Number(e.target.value))} className="border border-blue-200 rounded-md px-3 py-1.5 w-1/2 md:w-32 text-right text-blue-700 font-bold" />
+                      <input type="number" value={hargaListrik} onChange={e => setHargaListrik(Number(e.target.value))} className="border border-blue-200 rounded-md px-3 py-1.5 w-1/2 md:w-32 text-right text-blue-700 font-bold bg-white" />
                     </div>
                   )}
                   {(activeTool === 3 || activeTool === 4) && (
                     <div className="flex justify-between items-center bg-green-50 p-2 md:p-3 rounded-md">
                       <label className="w-1/2">Harga Gas (Rp/m³)</label>
-                      <input type="number" value={hargaGas} onChange={e => setHargaGas(Number(e.target.value))} className="border border-green-200 rounded-md px-3 py-1.5 w-1/2 md:w-32 text-right text-green-700 font-bold" />
+                      <input type="number" value={hargaGas} onChange={e => setHargaGas(Number(e.target.value))} className="border border-green-200 rounded-md px-3 py-1.5 w-1/2 md:w-32 text-right text-green-700 font-bold bg-white" />
                     </div>
                   )}
                   {(activeTool === 5 || activeTool === 6) && (
                     <div className="flex justify-between items-center bg-purple-50 p-2 md:p-3 rounded-md">
                       <label className="w-1/2">Harga Material (Rp/Kg)</label>
-                      <input type="number" value={hargaMaterial} onChange={e => setHargaMaterial(Number(e.target.value))} className="border border-purple-200 rounded-md px-3 py-1.5 w-1/2 md:w-32 text-right text-purple-700 font-bold" />
+                      <input type="number" value={hargaMaterial} onChange={e => setHargaMaterial(Number(e.target.value))} className="border border-purple-200 rounded-md px-3 py-1.5 w-1/2 md:w-32 text-right text-purple-700 font-bold bg-white" />
                     </div>
                   )}
 
@@ -253,7 +260,8 @@ export default function ManufacturingDashboard() {
                       </div>
                       <div className="flex justify-between items-center">
                         <label>Massa Jenis</label>
-                        <input type="number" value={massaJenis} disabled className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right bg-slate-100 text-slate-500" />
+                        {/* INPUT MASSA JENIS SEKARANG BISA DIEDIT */}
+                        <input type="number" value={massaJenis} onChange={e => setMassaJenis(Number(e.target.value))} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right bg-white focus:outline-blue-500" />
                       </div>
                       <div className="flex justify-between items-center"><label>Tebal (mm)</label><input type="number" value={tebal} onChange={e => setTebal(Number(e.target.value))} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
                       <div className="flex justify-between items-center"><label>Panjang (mm)</label><input type="number" value={panjang} onChange={e => setPanjang(Number(e.target.value))} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
@@ -295,6 +303,8 @@ export default function ManufacturingDashboard() {
                     </div>
                   ) : (
                     <div className="flex flex-col gap-3 md:gap-4 w-full">
+                      
+                      {/* HASIL: LISTRIK STANDAR & GAS STANDAR */}
                       {(activeTool === 1 || activeTool === 3) && (
                         <>
                           <div className="bg-white border rounded-lg p-3 md:p-4 flex justify-between items-center">
@@ -308,19 +318,38 @@ export default function ManufacturingDashboard() {
                         </>
                       )}
 
+                      {/* HASIL DETAIL: LISTRIK + PO & GAS + PO */}
                       {(activeTool === 2 || activeTool === 4) && (
                         <>
+                          {/* Kotak Rincian Base Listrik/Gas di atasnya */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
+                            <div className="bg-white border border-slate-200 rounded-lg p-3 flex flex-col gap-1">
+                               <span className="text-slate-500 font-medium text-[10px] md:text-xs uppercase tracking-wider">Konsumsi / Jam (Base)</span>
+                               <span className="text-base font-bold text-slate-700">
+                                 {activeTool === 2 ? `${(((ampere * volt) / 1000) * qtyMesin).toFixed(2)} kWh` : `${(((flowGas * 60) * 0.85 / 1000) * qtyMesin).toFixed(3)} m³`}
+                               </span>
+                            </div>
+                            <div className="bg-white border border-slate-200 rounded-lg p-3 flex flex-col gap-1">
+                               <span className="text-slate-500 font-medium text-[10px] md:text-xs uppercase tracking-wider">Biaya / Jam (Base)</span>
+                               <span className="text-base font-bold text-slate-700">
+                                 Rp {activeTool === 2 ? ((((ampere * volt) / 1000) * qtyMesin) * hargaListrik).toLocaleString('id-ID') : ((((flowGas * 60) * 0.85 / 1000) * qtyMesin) * hargaGas).toLocaleString('id-ID')}
+                               </span>
+                            </div>
+                          </div>
+
                           <div className="bg-white border rounded-lg p-3 md:p-4 flex justify-between items-center">
                             <span className="text-slate-500 font-medium text-xs md:text-sm">Total Waktu PO</span>
                             <span className="text-base md:text-lg font-bold text-slate-800">{hasil.jam_po} Jam</span>
                           </div>
+                          
                           <div className="bg-[#1e3250] border rounded-lg p-3 md:p-4 flex flex-col md:flex-row justify-between md:items-center text-white shadow-md gap-1">
                             <span className="font-medium text-slate-200 text-xs md:text-sm">Total Biaya PO</span>
-                            <span className="text-xl md:text-2xl font-bold">Rp {hasil.total_biaya_po.toLocaleString('id-ID')}</span>
+                            <span className="text-xl md:text-2xl font-bold">Rp {hasil.total_biaya_po?.toLocaleString('id-ID')}</span>
                           </div>
                         </>
                       )}
 
+                      {/* HASIL: MATERIAL PLATE & PIPE */}
                       {(activeTool === 5 || activeTool === 6) && (
                         <>
                           <div className="bg-white border rounded-lg p-3 md:p-4 flex justify-between items-center">
@@ -329,11 +358,12 @@ export default function ManufacturingDashboard() {
                           </div>
                           <div className="bg-white border rounded-lg p-3 md:p-4 flex flex-col md:flex-row justify-between md:items-center border-l-4 border-l-purple-500 gap-1">
                             <span className="text-slate-500 font-medium text-xs md:text-sm">Estimasi Harga Pokok</span>
-                            <span className="text-xl md:text-2xl font-bold text-purple-600">Rp {hasil.total_biaya.toLocaleString('id-ID')}</span>
+                            <span className="text-xl md:text-2xl font-bold text-purple-600">Rp {hasil.total_biaya?.toLocaleString('id-ID')}</span>
                           </div>
                         </>
                       )}
 
+                      {/* HASIL: PO MANDIRI */}
                       {activeTool === 7 && (
                         <div className="bg-white border rounded-lg p-4 md:p-6 flex flex-col gap-2 items-center justify-center border-t-4 border-t-emerald-500">
                            <span className="text-slate-500 font-medium text-xs md:text-sm text-center">Estimasi Total Waktu PO</span>
