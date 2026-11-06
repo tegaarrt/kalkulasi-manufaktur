@@ -11,35 +11,35 @@ export default function ManufacturingDashboard() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
 
-  // Harga diset default dan tetap (tidak ter-reset saat ganti tool)
+  // Harga tetap memiliki nilai default
   const [hargaListrik, setHargaListrik] = useState<number | string>(1500);
   const [hargaGas, setHargaGas] = useState<number | string>(11000);
   const [hargaMaterial, setHargaMaterial] = useState<number | string>(15000);
 
-  // Input Parameter di-set default ke 0
-  const [qtyMesin, setQtyMesin] = useState<number | string>(0);
-  const [qtyPO, setQtyPO] = useState<number | string>(0);
-  const [ctPerPcs, setCtPerPcs] = useState<number | string>(0);
-  const [ampere, setAmpere] = useState<number | string>(0);
-  const [volt, setVolt] = useState<number | string>(0);
-  const [flowGas, setFlowGas] = useState<number | string>(0);
+  // Semua input lainnya diinisialisasi sebagai string kosong agar tidak ada angka 0 default
+  const [qtyMesin, setQtyMesin] = useState<number | string>("");
+  const [qtyPO, setQtyPO] = useState<number | string>("");
+  const [ctPerPcs, setCtPerPcs] = useState<number | string>("");
+  const [ampere, setAmpere] = useState<number | string>("");
+  const [volt, setVolt] = useState<number | string>("");
+  const [flowGas, setFlowGas] = useState<number | string>("");
   
   const [jenisMaterial, setJenisMaterial] = useState("SPHC");
   const [massaJenis, setMassaJenis] = useState<number | string>(7.85);
-  const [panjang, setPanjang] = useState<number | string>(0);
-  const [tebal, setTebal] = useState<number | string>(0);
-  const [lebar, setLebar] = useState<number | string>(0);
-  const [outDiameter, setOutDiameter] = useState<number | string>(0);
+  const [panjang, setPanjang] = useState<number | string>("");
+  const [tebal, setTebal] = useState<number | string>("");
+  const [lebar, setLebar] = useState<number | string>("");
+  const [outDiameter, setOutDiameter] = useState<number | string>("");
 
   const [hasil, setHasil] = useState<any>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  // FUNGSI INI AKAN MEMBUNUH ANGKA 0 DI DEPAN (020 -> 20)
+  // Fungsi diperbarui: Mengizinkan kotak kosong (string ""), mencegah angka "020"
   const handleNumber = (val: string, setter: React.Dispatch<React.SetStateAction<number | string>>) => {
     if (val === '') {
-      setter(0);
+      setter(''); // Biarkan kosong
     } else {
-      setter(Number(val)); // Otomatis mengonversi string "020" menjadi number 20
+      setter(Number(val)); 
     }
   };
 
@@ -50,13 +50,12 @@ export default function ManufacturingDashboard() {
     else setMassaJenis(7.85);
   };
 
-  // Reset semua input (kecuali harga) saat ganti menu
   const resetInputs = () => {
-    setQtyMesin(0); setQtyPO(0); setCtPerPcs(0);
-    setAmpere(0); setVolt(0); setFlowGas(0);
-    setPanjang(0); setTebal(0); setLebar(0); setOutDiameter(0);
+    setQtyMesin(""); setQtyPO(""); setCtPerPcs("");
+    setAmpere(""); setVolt(""); setFlowGas("");
+    setPanjang(""); setTebal(""); setLebar(""); setOutDiameter("");
     setJenisMaterial("SPHC"); setMassaJenis(7.85);
-    setHasil({}); // Kosongkan hasil perhitungan sebelumnya
+    setHasil({}); 
   };
 
   const changeTool = (id: number) => {
@@ -75,7 +74,6 @@ export default function ManufacturingDashboard() {
     let endpoint = "";
     let payload = {};
 
-    // Pastikan dikirim sebagai number murni ke backend
     const numQtyMesin = Number(qtyMesin);
     const numQtyPO = Number(qtyPO);
     const numCtPerPcs = Number(ctPerPcs);
@@ -144,7 +142,8 @@ export default function ManufacturingDashboard() {
         <div className={`p-4 flex items-center border-b border-white/10 h-20 ${isDesktopCollapsed ? 'justify-center lg:px-0' : 'justify-between lg:justify-start lg:gap-3'}`}>
           <div className="flex items-center gap-3 overflow-hidden h-full w-full relative">
             {!isDesktopCollapsed ? (
-              <img src="/image.png" alt="E-CODAPROVE-26" className="max-h-12 object-contain mx-auto mix-blend-multiply contrast-125" />
+              // Ganti src dengan nama file logo transparan yang baru kamu upload
+              <img src="logo.png" alt="E-CODAPROVE-26" className="max-h-12 object-contain mx-auto" />
             ) : (
               <Database size={24} className="text-blue-400 mx-auto" />
             )}
