@@ -134,8 +134,8 @@ def kalkulasi_plate(data: PlateInput):
 @app.post("/api/kalkulasi/material/pipe")
 def kalkulasi_pipe(data: PipeInput):
     # Rumus 3 Pipe: ((Out Diameter * 3,14) - 50% Tebal ) * 3,14 * Tebal * Panjang * Massa Jenis / 1.000.000
-    komponen_diameter = (data.out_diameter * 3.14) - (0.5 * data.tebal)
-    berat_kg = (komponen_diameter * 3.14 * data.tebal * data.panjang * data.massa_jenis) / 1_000_000
+    komponen_diameter = (data.out_diameter * 3.14) - (data.tebal)
+    berat_kg = (komponen_diameter  * data.tebal * data.panjang * data.massa_jenis) / 1_000_000
     biaya = berat_kg * data.harga_material
     
     return {
