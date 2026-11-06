@@ -112,7 +112,7 @@ export default function ManufacturingDashboard() {
         <div className={`p-4 flex items-center border-b border-white/10 h-20 ${isDesktopCollapsed ? 'justify-center lg:px-0' : 'justify-between lg:justify-start lg:gap-3'}`}>
           <div className="flex items-center gap-3 overflow-hidden h-full w-full">
             {!isDesktopCollapsed ? (
-              <img src="/image_11bec3.jpg" alt="E-CODAPROVE-26" className="max-h-12 object-contain mx-auto" />
+              <img src="/image.png" alt="E-CODAPROVE-26" className="max-h-12 object-contain mx-auto" />
             ) : (
               <Database size={24} className="text-blue-400 mx-auto" />
             )}
