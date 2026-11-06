@@ -1,0 +1,18 @@
+{
+  "id": "/",
+  "name": "E-CODAPROVE-26",
+  "short_name": "CODAPROVE",
+  "description": "Quick Calculation Tools PT Berlindo Mitra Utama",
+  "lang": "id",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1e3250",
+  "theme_color": "#1e3250",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

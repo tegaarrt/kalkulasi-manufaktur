@@ -24,3 +24,11 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Di bawah 16px, Safari iPhone otomatis zoom saat kolom input disentuh. */
+@media (max-width: 1023px) {
+  input,
+  select {
+    font-size: 16px;
+  }
+}

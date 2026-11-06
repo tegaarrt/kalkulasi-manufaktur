@@ -1,14 +1,8 @@
-import withPWAInit from "@ducanh2912/next-pwa";
+import type { NextConfig } from "next";
 
-const withPWA = withPWAInit({
-  dest: "public",
-  disable: process.env.NODE_ENV === "development",
-  register: true,
-});
-
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  turbopack: {}, // Mencegah error PWA tanpa mematikan Tailwind
+// Hasil build berupa file statis di folder out/ karena tidak ada backend lagi.
+const nextConfig: NextConfig = {
+  output: "export",
 };
 
-export default withPWA(nextConfig);
+export default nextConfig;
