@@ -11,10 +11,12 @@ export default function ManufacturingDashboard() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
 
+  // Harga diset default dan tetap (tidak ter-reset saat ganti tool)
   const [hargaListrik, setHargaListrik] = useState<number | string>(1500);
   const [hargaGas, setHargaGas] = useState<number | string>(11000);
   const [hargaMaterial, setHargaMaterial] = useState<number | string>(15000);
 
+  // Input Parameter di-set default ke 0
   const [qtyMesin, setQtyMesin] = useState<number | string>(0);
   const [qtyPO, setQtyPO] = useState<number | string>(0);
   const [ctPerPcs, setCtPerPcs] = useState<number | string>(0);
@@ -32,13 +34,13 @@ export default function ManufacturingDashboard() {
   const [hasil, setHasil] = useState<any>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleNumberInput = (val: string, setter: React.Dispatch<React.SetStateAction<number | string>>) => {
-    if (val === "" || val === "0") {
+  // FUNGSI INI AKAN MEMBUNUH ANGKA 0 DI DEPAN (020 -> 20)
+  const handleNumber = (val: string, setter: React.Dispatch<React.SetStateAction<number | string>>) => {
+    if (val === '') {
       setter(0);
-      return;
+    } else {
+      setter(Number(val)); // Otomatis mengonversi string "020" menjadi number 20
     }
-    const cleaned = val.replace(/^0+(?!\.)/, ''); 
-    setter(cleaned === "" ? 0 : Number(cleaned));
   };
 
   const handleMaterialChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -48,11 +50,13 @@ export default function ManufacturingDashboard() {
     else setMassaJenis(7.85);
   };
 
+  // Reset semua input (kecuali harga) saat ganti menu
   const resetInputs = () => {
     setQtyMesin(0); setQtyPO(0); setCtPerPcs(0);
     setAmpere(0); setVolt(0); setFlowGas(0);
     setPanjang(0); setTebal(0); setLebar(0); setOutDiameter(0);
-    setHasil({});
+    setJenisMaterial("SPHC"); setMassaJenis(7.85);
+    setHasil({}); // Kosongkan hasil perhitungan sebelumnya
   };
 
   const changeTool = (id: number) => {
@@ -71,6 +75,7 @@ export default function ManufacturingDashboard() {
     let endpoint = "";
     let payload = {};
 
+    // Pastikan dikirim sebagai number murni ke backend
     const numQtyMesin = Number(qtyMesin);
     const numQtyPO = Number(qtyPO);
     const numCtPerPcs = Number(ctPerPcs);
@@ -139,7 +144,6 @@ export default function ManufacturingDashboard() {
         <div className={`p-4 flex items-center border-b border-white/10 h-20 ${isDesktopCollapsed ? 'justify-center lg:px-0' : 'justify-between lg:justify-start lg:gap-3'}`}>
           <div className="flex items-center gap-3 overflow-hidden h-full w-full relative">
             {!isDesktopCollapsed ? (
-              // Menggunakan mix-blend-multiply agar putih menjadi transparan pada background gelap
               <img src="/image.png" alt="E-CODAPROVE-26" className="max-h-12 object-contain mx-auto mix-blend-multiply contrast-125" />
             ) : (
               <Database size={24} className="text-blue-400 mx-auto" />
@@ -243,34 +247,34 @@ export default function ManufacturingDashboard() {
                   {(activeTool === 1 || activeTool === 2) && (
                     <div className="flex justify-between items-center bg-blue-50 p-2 md:p-3 rounded-md">
                       <label className="w-1/2">Harga Listrik (Rp/kWh)</label>
-                      <input type="number" value={hargaListrik} onChange={e => handleNumberInput(e.target.value, setHargaListrik)} className="border border-blue-200 rounded-md px-3 py-1.5 w-1/2 md:w-32 text-right text-blue-700 font-bold bg-white" />
+                      <input type="number" value={hargaListrik} onChange={e => handleNumber(e.target.value, setHargaListrik)} className="border border-blue-200 rounded-md px-3 py-1.5 w-1/2 md:w-32 text-right text-blue-700 font-bold bg-white" />
                     </div>
                   )}
                   {(activeTool === 3 || activeTool === 4) && (
                     <div className="flex justify-between items-center bg-green-50 p-2 md:p-3 rounded-md">
                       <label className="w-1/2">Harga Gas (Rp/m³)</label>
-                      <input type="number" value={hargaGas} onChange={e => handleNumberInput(e.target.value, setHargaGas)} className="border border-green-200 rounded-md px-3 py-1.5 w-1/2 md:w-32 text-right text-green-700 font-bold bg-white" />
+                      <input type="number" value={hargaGas} onChange={e => handleNumber(e.target.value, setHargaGas)} className="border border-green-200 rounded-md px-3 py-1.5 w-1/2 md:w-32 text-right text-green-700 font-bold bg-white" />
                     </div>
                   )}
                   {(activeTool === 5 || activeTool === 6) && (
                     <div className="flex justify-between items-center bg-purple-50 p-2 md:p-3 rounded-md">
                       <label className="w-1/2">Harga Material (Rp/Kg)</label>
-                      <input type="number" value={hargaMaterial} onChange={e => handleNumberInput(e.target.value, setHargaMaterial)} className="border border-purple-200 rounded-md px-3 py-1.5 w-1/2 md:w-32 text-right text-purple-700 font-bold bg-white" />
+                      <input type="number" value={hargaMaterial} onChange={e => handleNumber(e.target.value, setHargaMaterial)} className="border border-purple-200 rounded-md px-3 py-1.5 w-1/2 md:w-32 text-right text-purple-700 font-bold bg-white" />
                     </div>
                   )}
 
                   {(activeTool === 1 || activeTool === 2) && (
                     <>
-                      <div className="flex justify-between items-center"><label>Ampere (A)</label><input type="number" value={ampere} onChange={e => handleNumberInput(e.target.value, setAmpere)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
-                      <div className="flex justify-between items-center"><label>Volt (V)</label><input type="number" value={volt} onChange={e => handleNumberInput(e.target.value, setVolt)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
-                      <div className="flex justify-between items-center"><label>Jumlah Unit Mesin</label><input type="number" value={qtyMesin} onChange={e => handleNumberInput(e.target.value, setQtyMesin)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
+                      <div className="flex justify-between items-center"><label>Ampere (A)</label><input type="number" value={ampere} onChange={e => handleNumber(e.target.value, setAmpere)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
+                      <div className="flex justify-between items-center"><label>Volt (V)</label><input type="number" value={volt} onChange={e => handleNumber(e.target.value, setVolt)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
+                      <div className="flex justify-between items-center"><label>Jumlah Unit Mesin</label><input type="number" value={qtyMesin} onChange={e => handleNumber(e.target.value, setQtyMesin)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
                     </>
                   )}
 
                   {(activeTool === 3 || activeTool === 4) && (
                     <>
-                      <div className="flex justify-between items-center"><label>Flow Gas (L/Min)</label><input type="number" value={flowGas} onChange={e => handleNumberInput(e.target.value, setFlowGas)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
-                      <div className="flex justify-between items-center"><label>Jumlah Unit Mesin</label><input type="number" value={qtyMesin} onChange={e => handleNumberInput(e.target.value, setQtyMesin)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
+                      <div className="flex justify-between items-center"><label>Flow Gas (L/Min)</label><input type="number" value={flowGas} onChange={e => handleNumber(e.target.value, setFlowGas)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
+                      <div className="flex justify-between items-center"><label>Jumlah Unit Mesin</label><input type="number" value={qtyMesin} onChange={e => handleNumber(e.target.value, setQtyMesin)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
                     </>
                   )}
 
@@ -286,25 +290,25 @@ export default function ManufacturingDashboard() {
                       </div>
                       <div className="flex justify-between items-center">
                         <label>Massa Jenis</label>
-                        <input type="number" value={massaJenis} onChange={e => handleNumberInput(e.target.value, setMassaJenis)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right bg-white focus:outline-blue-500" />
+                        <input type="number" value={massaJenis} onChange={e => handleNumber(e.target.value, setMassaJenis)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right bg-white focus:outline-blue-500" />
                       </div>
-                      <div className="flex justify-between items-center"><label>Tebal (mm)</label><input type="number" value={tebal} onChange={e => handleNumberInput(e.target.value, setTebal)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
-                      <div className="flex justify-between items-center"><label>Panjang (mm)</label><input type="number" value={panjang} onChange={e => handleNumberInput(e.target.value, setPanjang)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
+                      <div className="flex justify-between items-center"><label>Tebal (mm)</label><input type="number" value={tebal} onChange={e => handleNumber(e.target.value, setTebal)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
+                      <div className="flex justify-between items-center"><label>Panjang (mm)</label><input type="number" value={panjang} onChange={e => handleNumber(e.target.value, setPanjang)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
                     </>
                   )}
 
                   {activeTool === 5 && (
-                    <div className="flex justify-between items-center"><label>Lebar (mm)</label><input type="number" value={lebar} onChange={e => handleNumberInput(e.target.value, setLebar)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
+                    <div className="flex justify-between items-center"><label>Lebar (mm)</label><input type="number" value={lebar} onChange={e => handleNumber(e.target.value, setLebar)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
                   )}
 
                   {activeTool === 6 && (
-                    <div className="flex justify-between items-center"><label>Out Diameter (mm)</label><input type="number" value={outDiameter} onChange={e => handleNumberInput(e.target.value, setOutDiameter)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
+                    <div className="flex justify-between items-center"><label>Out Diameter (mm)</label><input type="number" value={outDiameter} onChange={e => handleNumber(e.target.value, setOutDiameter)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
                   )}
 
                   {(activeTool === 2 || activeTool === 4 || activeTool === 7) && (
                     <div className={activeTool !== 7 ? "border-t border-dashed pt-4 mt-2" : ""}>
-                      <div className="flex justify-between items-center mb-2"><label className="font-semibold text-slate-700">Jumlah PO (Pcs)</label><input type="number" value={qtyPO} onChange={e => handleNumberInput(e.target.value, setQtyPO)} className="border border-slate-300 rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
-                      <div className="flex justify-between items-center"><label className="font-semibold text-slate-700">Cycle Time (Detik/Pcs)</label><input type="number" value={ctPerPcs} onChange={e => handleNumberInput(e.target.value, setCtPerPcs)} className="border border-slate-300 rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
+                      <div className="flex justify-between items-center mb-2"><label className="font-semibold text-slate-700">Jumlah PO (Pcs)</label><input type="number" value={qtyPO} onChange={e => handleNumber(e.target.value, setQtyPO)} className="border border-slate-300 rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
+                      <div className="flex justify-between items-center"><label className="font-semibold text-slate-700">Cycle Time (Detik/Pcs)</label><input type="number" value={ctPerPcs} onChange={e => handleNumber(e.target.value, setCtPerPcs)} className="border border-slate-300 rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
                     </div>
                   )}
                 </div>
@@ -337,7 +341,7 @@ export default function ManufacturingDashboard() {
                           </div>
                           <div className="bg-white border rounded-lg p-3 md:p-4 flex flex-col md:flex-row justify-between md:items-center border-l-4 border-l-blue-500 gap-1">
                             <span className="text-slate-500 font-medium text-xs md:text-sm">Estimasi Biaya / Jam</span>
-                            <span className="text-xl md:text-2xl font-bold text-blue-600">Rp {hasil.biaya_per_jam.toLocaleString('id-ID')}</span>
+                            <span className="text-xl md:text-2xl font-bold text-blue-600">Rp {hasil.biaya_per_jam?.toLocaleString('id-ID')}</span>
                           </div>
                         </>
                       )}
@@ -355,7 +359,7 @@ export default function ManufacturingDashboard() {
                             <div className="bg-white border border-slate-200 rounded-lg p-3 flex flex-col gap-1">
                                <span className="text-slate-500 font-medium text-[10px] md:text-xs uppercase tracking-wider">Biaya / Jam (Base)</span>
                                <span className="text-base font-bold text-slate-700">
-                                 Rp {activeTool === 2 ? (hasil.kwh_base * Number(hargaListrik)).toLocaleString('id-ID') : (hasil.m3_base * Number(hargaGas)).toLocaleString('id-ID')}
+                                 Rp {hasil.biaya_base?.toLocaleString('id-ID')}
                                </span>
                             </div>
                           </div>
