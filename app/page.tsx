@@ -19,20 +19,24 @@ const MACHINING_AWAL: IsianMachining = {
   putaranPerMm: 4, waktuPerMm: 0.031, pemakananPerPass: 3, waktuPerPass: 8,
 };
 
-const ISIAN_MACHINING: Record<number, { input: [KunciMachining, string][]; standar: [KunciMachining, string][] }> = {
-  8: {
-    input: [['qtyLubang', 'Qty Lubang (pcs)'], ['dalam', 'Depth Poket (mm)'], ['diameterPoket', 'Diameter Poket (mm)']],
-    standar: [['putaranPerMm', 'Pemakanan per mm (putaran)'], ['waktuPerMm', 'Standar Waktu / mm (detik)']],
-  },
-  9: {
-    input: [['qtyLubang', 'Qty Lubang (pcs)'], ['dalam', 'Depth Poket (mm)'], ['panjangPoket', 'Panjang Poket (mm)'], ['lebarPoket', 'Lebar Poket (mm)']],
-    standar: [['waktuPerMm', 'Standar Waktu / mm (detik)']],
-  },
-  10: {
-    input: [['qtyLubang', 'Qty Lubang (pcs)'], ['dalam', 'Depth Drill (mm)']],
-    standar: [['pemakananPerPass', 'Standar Pemakanan (mm)'], ['waktuPerPass', 'Standar Waktu / 1x Z (detik)']],
-  },
+const SETTING_PARAMETER = 11;
+const KUNCI_SETTING = 'ecodaprov-setting-machining';
+type KunciStandar = 'putaranPerMm' | 'waktuPerMm' | 'pemakananPerPass' | 'waktuPerPass';
+
+const ISIAN_MACHINING: Record<number, [KunciMachining, string][]> = {
+  8: [['qtyLubang', 'Qty Lubang (pcs)'], ['dalam', 'Depth Poket (mm)'], ['diameterPoket', 'Diameter Poket (mm)']],
+  9: [['qtyLubang', 'Qty Lubang (pcs)'], ['dalam', 'Depth Poket (mm)'], ['panjangPoket', 'Panjang Poket (mm)'], ['lebarPoket', 'Lebar Poket (mm)']],
+  10: [['qtyLubang', 'Qty Lubang (pcs)'], ['dalam', 'Depth Drill (mm)']],
 };
+
+// Parameter standar yang diatur di menu Setting Parameter, berlaku untuk semua machining.
+const DAFTAR_STANDAR: { kunci: KunciStandar; label: string; satuan: string; ringkas: string; dipakai: number[] }[] = [
+  { kunci: 'waktuPerMm', label: 'Standar Waktu / mm', satuan: 'detik', ringkas: 'detik/mm', dipakai: [8, 9] },
+  { kunci: 'putaranPerMm', label: 'Pemakanan per mm', satuan: 'putaran', ringkas: 'putaran/mm', dipakai: [8] },
+  { kunci: 'pemakananPerPass', label: 'Standar Pemakanan Drill', satuan: 'mm', ringkas: 'mm/langkah', dipakai: [10] },
+  { kunci: 'waktuPerPass', label: 'Standar Waktu / 1x Z', satuan: 'detik', ringkas: 'detik/langkah', dipakai: [10] },
+];
+const NAMA_MACHINING: Record<number, string> = { 8: 'Poket Bulat', 9: 'Poket Kotak', 10: 'Drill' };
 
 const angka = (n?: number) => n?.toLocaleString('id-ID');
 
@@ -63,8 +67,38 @@ export default function ManufacturingDashboard() {
   const [outDiameter, setOutDiameter] = useState<number | string>("");
 
   const [machining, setMachining] = useState<IsianMachining>(MACHINING_AWAL);
+  // Setting parameter disimpan di perangkat, jadi tetap ada saat aplikasi dibuka lagi.
+  const simpanSetting = (data: IsianMachining) => {
+    try {
+      localStorage.setItem(KUNCI_SETTING, JSON.stringify(Object.fromEntries(DAFTAR_STANDAR.map(({ kunci }) => [kunci, data[kunci]]))));
+    } catch { /* penyimpanan tidak tersedia */ }
+  };
   const ubahMachining = (kunci: KunciMachining, val: string) =>
-    setMachining(lama => ({ ...lama, [kunci]: val === '' ? '' : Number(val) }));
+    setMachining(lama => {
+      const baru = { ...lama, [kunci]: val === '' ? '' : Number(val) };
+      if (DAFTAR_STANDAR.some(d => d.kunci === kunci)) simpanSetting(baru);
+      return baru;
+    });
+
+  useEffect(() => {
+    try {
+      const tersimpan = JSON.parse(localStorage.getItem(KUNCI_SETTING) || '{}');
+      setMachining(lama => {
+        const baru = { ...lama };
+        for (const { kunci } of DAFTAR_STANDAR) {
+          if (typeof tersimpan[kunci] === 'number') baru[kunci] = tersimpan[kunci];
+        }
+        return baru;
+      });
+    } catch { /* pakai nilai bawaan */ }
+  }, []);
+
+  const kembalikanDefault = () =>
+    setMachining(lama => {
+      const baru = { ...lama, ...Object.fromEntries(DAFTAR_STANDAR.map(({ kunci }) => [kunci, MACHINING_AWAL[kunci]])) };
+      simpanSetting(baru);
+      return baru;
+    });
 
   const [hasil, setHasil] = useState<Hasil>({});
   const [pesanError, setPesanError] = useState("");
@@ -125,8 +159,9 @@ export default function ManufacturingDashboard() {
       setPesanError("Qty lubang harus bilangan bulat.");
       return;
     }
-    if (activeTool === 10 && !(Number(machining.pemakananPerPass) > 0)) {
-      setPesanError("Standar pemakanan harus lebih dari 0.");
+    const standarKosong = DAFTAR_STANDAR.some(({ kunci, dipakai }) => dipakai.includes(activeTool) && !(Number(machining[kunci]) > 0));
+    if (standarKosong) {
+      setPesanError("Nilai standar belum diisi. Atur di menu Proses Machining → Setting Parameter.");
       return;
     }
     setPesanError("");
@@ -162,7 +197,7 @@ export default function ManufacturingDashboard() {
     { id: 'gas', title: 'Menu Gas', icon: Flame, submenus: [{ id: 3, name: "Gas Standar" }, { id: 4, name: "Gas + Estimasi PO" }] },
     { id: 'material', title: 'Berat Material', icon: Package, submenus: [{ id: 5, name: "Plate" }, { id: 6, name: "Pipe" }] },
     { id: 'po', title: 'Menghitung PO', icon: Clock, submenus: [{ id: 7, name: "Kalkulasi Waktu PO" }] },
-    { id: 'machining', title: 'Proses Machining', icon: Wrench, submenus: [{ id: 8, name: "Machining Poket Bulat" }, { id: 9, name: "Machining Poket Kotak" }, { id: 10, name: "Machining Drill" }] }
+    { id: 'machining', title: 'Proses Machining', icon: Wrench, submenus: [{ id: 8, name: "Machining Poket Bulat" }, { id: 9, name: "Machining Poket Kotak" }, { id: 10, name: "Machining Drill" }, { id: SETTING_PARAMETER, name: "Setting Parameter" }] }
   ];
 
   const getActiveToolName = () => {
@@ -280,6 +315,21 @@ export default function ManufacturingDashboard() {
               </div>
             </div>
             
+            {activeTool === SETTING_PARAMETER ? (
+            <div className="p-4 md:p-6 flex flex-col gap-4 max-w-2xl w-full text-xs md:text-sm">
+              <p className="text-slate-500">Nilai standar dari actual trial. Perubahan langsung berlaku untuk semua hitungan machining dan tersimpan di perangkat ini.</p>
+              {DAFTAR_STANDAR.map(({ kunci, label, satuan, dipakai }) => (
+                <div key={kunci} className="flex justify-between items-center gap-3 bg-amber-50 p-3 rounded-md">
+                  <div className="flex flex-col">
+                    <label htmlFor={kunci} className="font-medium text-slate-700">{label} ({satuan})</label>
+                    <span className="text-[11px] md:text-xs text-slate-500">Dipakai: {dipakai.map(n => NAMA_MACHINING[n]).join(', ')}</span>
+                  </div>
+                  <input id={kunci} type="number" value={machining[kunci]} onChange={e => ubahMachining(kunci, e.target.value)} className="border border-amber-200 rounded-md px-3 py-1.5 w-28 md:w-32 text-right text-amber-700 font-bold bg-white" />
+                </div>
+              ))}
+              <button type="button" onClick={kembalikanDefault} className="self-start text-sm border border-slate-300 rounded-lg px-4 py-2 text-slate-600 hover:bg-slate-50">Kembalikan ke Default</button>
+            </div>
+            ) : (
             <div className="p-4 md:p-6 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 flex-1">
               
               {/* INPUT PANEL */}
@@ -359,18 +409,12 @@ export default function ManufacturingDashboard() {
 
                   {ISIAN_MACHINING[activeTool] && (
                     <>
-                      {ISIAN_MACHINING[activeTool].input.map(([kunci, label]) => (
+                      {ISIAN_MACHINING[activeTool].map(([kunci, label]) => (
                         <div key={kunci} className="flex justify-between items-center"><label>{label}</label><input type="number" value={machining[kunci]} onChange={e => ubahMachining(kunci, e.target.value)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
                       ))}
-                      <div className="border-t border-dashed pt-4 mt-2 flex flex-col gap-2">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Standar</span>
-                        {ISIAN_MACHINING[activeTool].standar.map(([kunci, label]) => (
-                          <div key={kunci} className="flex justify-between items-center bg-amber-50 p-2 md:p-3 rounded-md">
-                            <label className="w-1/2">{label}</label>
-                            <input type="number" value={machining[kunci]} onChange={e => ubahMachining(kunci, e.target.value)} className="border border-amber-200 rounded-md px-3 py-1.5 w-1/2 md:w-32 text-right text-amber-700 font-bold bg-white" />
-                          </div>
-                        ))}
-                      </div>
+                      <p className="text-[11px] md:text-xs text-slate-500 border-t border-dashed pt-3">
+                        Standar: {DAFTAR_STANDAR.filter(d => d.dipakai.includes(activeTool)).map(d => `${angka(Number(machining[d.kunci]))} ${d.ringkas}`).join(' · ')}. Ubah di <button type="button" onClick={() => changeTool(SETTING_PARAMETER)} className="text-blue-600 underline">Setting Parameter</button>.
+                      </p>
                     </>
                   )}
                 </div>
@@ -496,6 +540,7 @@ export default function ManufacturingDashboard() {
               </div>
               
             </div>
+            )}
           </div>
         </main>
       </div>
