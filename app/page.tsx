@@ -1,10 +1,40 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
 import { 
-  Home, PenTool, Database, Zap, Flame, Package, Clock, Calculator, CheckCircle2,
+  Home, PenTool, Database, Zap, Flame, Package, Clock, Calculator, CheckCircle2, Wrench,
   ChevronDown, ChevronRight, BarChart2, Menu, X, ChevronLeft
 } from 'lucide-react';
 import { hitung, type Hasil } from '../lib/kalkulasi';
+
+// Isian machining. Nilai standar diambil dari hasil actual trial dan bisa diubah.
+type IsianMachining = Record<
+  'qtyLubang' | 'dalam' | 'diameterPoket' | 'panjangPoket' | 'lebarPoket' |
+  'putaranPerMm' | 'waktuPerMm' | 'pemakananPerPass' | 'waktuPerPass',
+  number | string
+>;
+type KunciMachining = keyof IsianMachining;
+
+const MACHINING_AWAL: IsianMachining = {
+  qtyLubang: "", dalam: "", diameterPoket: "", panjangPoket: "", lebarPoket: "",
+  putaranPerMm: 4, waktuPerMm: 0.031, pemakananPerPass: 3, waktuPerPass: 8,
+};
+
+const ISIAN_MACHINING: Record<number, { input: [KunciMachining, string][]; standar: [KunciMachining, string][] }> = {
+  8: {
+    input: [['qtyLubang', 'Qty Lubang (pcs)'], ['dalam', 'Depth Poket (mm)'], ['diameterPoket', 'Diameter Poket (mm)']],
+    standar: [['putaranPerMm', 'Pemakanan per mm (putaran)'], ['waktuPerMm', 'Standar Waktu / mm (detik)']],
+  },
+  9: {
+    input: [['qtyLubang', 'Qty Lubang (pcs)'], ['dalam', 'Depth Poket (mm)'], ['panjangPoket', 'Panjang Poket (mm)'], ['lebarPoket', 'Lebar Poket (mm)']],
+    standar: [['waktuPerMm', 'Standar Waktu / mm (detik)']],
+  },
+  10: {
+    input: [['qtyLubang', 'Qty Lubang (pcs)'], ['dalam', 'Depth Drill (mm)']],
+    standar: [['pemakananPerPass', 'Standar Pemakanan (mm)'], ['waktuPerPass', 'Standar Waktu / 1x Z (detik)']],
+  },
+};
+
+const angka = (n?: number) => n?.toLocaleString('id-ID');
 
 export default function ManufacturingDashboard() {
   const [activeTool, setActiveTool] = useState(1);
@@ -31,6 +61,10 @@ export default function ManufacturingDashboard() {
   const [tebal, setTebal] = useState<number | string>("");
   const [lebar, setLebar] = useState<number | string>("");
   const [outDiameter, setOutDiameter] = useState<number | string>("");
+
+  const [machining, setMachining] = useState<IsianMachining>(MACHINING_AWAL);
+  const ubahMachining = (kunci: KunciMachining, val: string) =>
+    setMachining(lama => ({ ...lama, [kunci]: val === '' ? '' : Number(val) }));
 
   const [hasil, setHasil] = useState<Hasil>({});
   const [pesanError, setPesanError] = useState("");
@@ -64,6 +98,8 @@ export default function ManufacturingDashboard() {
     setAmpere(""); setVolt(""); setFlowGas("");
     setPanjang(""); setTebal(""); setLebar(""); setOutDiameter("");
     setJenisMaterial("SPHC"); setMassaJenis(7.85);
+    // Nilai standar machining tetap disimpan, hanya ukuran yang dikosongkan.
+    setMachining(lama => ({ ...lama, qtyLubang: "", dalam: "", diameterPoket: "", panjangPoket: "", lebarPoket: "" }));
     setHasil({}); setPesanError("");
   };
 
@@ -85,6 +121,14 @@ export default function ManufacturingDashboard() {
       setPesanError("Jumlah unit mesin dan jumlah PO harus bilangan bulat.");
       return;
     }
+    if (activeTool >= 8 && !Number.isInteger(Number(machining.qtyLubang))) {
+      setPesanError("Qty lubang harus bilangan bulat.");
+      return;
+    }
+    if (activeTool === 10 && !(Number(machining.pemakananPerPass) > 0)) {
+      setPesanError("Standar pemakanan harus lebih dari 0.");
+      return;
+    }
     setPesanError("");
     setHasil(hitung(activeTool, {
       ampere: Number(ampere),
@@ -101,6 +145,15 @@ export default function ManufacturingDashboard() {
       outDiameter: Number(outDiameter),
       massaJenis: Number(massaJenis),
       hargaMaterial: Number(hargaMaterial),
+      qtyLubang: Number(machining.qtyLubang),
+      dalam: Number(machining.dalam),
+      diameterPoket: Number(machining.diameterPoket),
+      panjangPoket: Number(machining.panjangPoket),
+      lebarPoket: Number(machining.lebarPoket),
+      putaranPerMm: Number(machining.putaranPerMm),
+      waktuPerMm: Number(machining.waktuPerMm),
+      pemakananPerPass: Number(machining.pemakananPerPass),
+      waktuPerPass: Number(machining.waktuPerPass),
     }));
   };
 
@@ -108,7 +161,8 @@ export default function ManufacturingDashboard() {
     { id: 'listrik', title: 'Menu Listrik', icon: Zap, submenus: [{ id: 1, name: "Listrik Standar" }, { id: 2, name: "Listrik + Estimasi PO" }] },
     { id: 'gas', title: 'Menu Gas', icon: Flame, submenus: [{ id: 3, name: "Gas Standar" }, { id: 4, name: "Gas + Estimasi PO" }] },
     { id: 'material', title: 'Berat Material', icon: Package, submenus: [{ id: 5, name: "Plate" }, { id: 6, name: "Pipe" }] },
-    { id: 'po', title: 'Menghitung PO', icon: Clock, submenus: [{ id: 7, name: "Kalkulasi Waktu PO" }] }
+    { id: 'po', title: 'Menghitung PO', icon: Clock, submenus: [{ id: 7, name: "Kalkulasi Waktu PO" }] },
+    { id: 'machining', title: 'Proses Machining', icon: Wrench, submenus: [{ id: 8, name: "Machining Poket Bulat" }, { id: 9, name: "Machining Poket Kotak" }, { id: 10, name: "Machining Drill" }] }
   ];
 
   const getActiveToolName = () => {
@@ -131,15 +185,16 @@ export default function ManufacturingDashboard() {
         ${isMobileSidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0'} 
         ${isDesktopCollapsed ? 'lg:w-20' : 'lg:w-64'}`}
       >
-        <div className={`p-4 flex items-center border-b border-white/10 h-20 ${isDesktopCollapsed ? 'justify-center lg:px-0' : 'justify-between lg:justify-start lg:gap-3'}`}>
-          <div className="flex items-center gap-3 overflow-hidden h-full w-full relative">
-            {!isDesktopCollapsed ? (
-              <img src="/logo.png" alt="E-CODAPROVE-26" className="max-h-12 object-contain mx-auto" />
-            ) : (
-              <Database size={24} className="text-blue-400 mx-auto" />
-            )}
-          </div>
-          <button onClick={() => setIsMobileSidebarOpen(false)} className="lg:hidden text-slate-300 hover:text-white"><X size={20} /></button>
+        <div className={`relative flex items-center border-b border-white/10 ${isDesktopCollapsed ? 'justify-center h-20 p-4 lg:px-0' : 'px-3 pt-9 pb-4 lg:pt-4'}`}>
+          {!isDesktopCollapsed ? (
+            <div className="w-full flex flex-col items-center gap-2">
+              <img src="/logo.png" alt="E-CODAPROV-26" className="w-full object-contain" />
+              <p className="text-xs font-semibold text-slate-100 text-center">PT Berlindo System Automation</p>
+            </div>
+          ) : (
+            <Database size={24} className="text-blue-400 mx-auto" />
+          )}
+          <button onClick={() => setIsMobileSidebarOpen(false)} aria-label="Tutup menu" className="absolute top-2 right-2 p-1 lg:hidden text-slate-300 hover:text-white"><X size={20} /></button>
         </div>
         
         <div className="flex-1 py-4 flex flex-col gap-2 px-3 overflow-y-auto overflow-x-hidden pb-20 lg:pb-4 custom-scrollbar">
@@ -301,6 +356,23 @@ export default function ManufacturingDashboard() {
                       <div className="flex justify-between items-center"><label className="font-semibold text-slate-700">Cycle Time (Detik/Pcs)</label><input type="number" value={ctPerPcs} onChange={e => handleNumber(e.target.value, setCtPerPcs)} className="border border-slate-300 rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
                     </div>
                   )}
+
+                  {ISIAN_MACHINING[activeTool] && (
+                    <>
+                      {ISIAN_MACHINING[activeTool].input.map(([kunci, label]) => (
+                        <div key={kunci} className="flex justify-between items-center"><label>{label}</label><input type="number" value={machining[kunci]} onChange={e => ubahMachining(kunci, e.target.value)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
+                      ))}
+                      <div className="border-t border-dashed pt-4 mt-2 flex flex-col gap-2">
+                        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Standar</span>
+                        {ISIAN_MACHINING[activeTool].standar.map(([kunci, label]) => (
+                          <div key={kunci} className="flex justify-between items-center bg-amber-50 p-2 md:p-3 rounded-md">
+                            <label className="w-1/2">{label}</label>
+                            <input type="number" value={machining[kunci]} onChange={e => ubahMachining(kunci, e.target.value)} className="border border-amber-200 rounded-md px-3 py-1.5 w-1/2 md:w-32 text-right text-amber-700 font-bold bg-white" />
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {pesanError && <p role="alert" className="text-sm text-red-600">{pesanError}</p>}
@@ -391,6 +463,32 @@ export default function ManufacturingDashboard() {
                            <span className="text-slate-500 font-medium text-xs md:text-sm text-center">Estimasi Total Waktu PO</span>
                            <span className="text-3xl md:text-4xl font-bold text-emerald-600">{hasil.total_jam_po} Jam</span>
                         </div>
+                      )}
+
+                      {activeTool >= 8 && (
+                        <>
+                          {activeTool === 8 && (
+                            <div className="bg-white border rounded-lg p-3 md:p-4 flex justify-between items-center">
+                              <span className="text-slate-500 font-medium text-xs md:text-sm">Bentangan Diameter</span>
+                              <span className="text-base md:text-lg font-bold text-slate-800">{angka(hasil.bentangan_mm)} mm</span>
+                            </div>
+                          )}
+                          <div className="bg-white border rounded-lg p-3 md:p-4 flex justify-between items-center">
+                            <span className="text-slate-500 font-medium text-xs md:text-sm">Total Length</span>
+                            <span className="text-base md:text-lg font-bold text-slate-800">{angka(hasil.total_length_mm)} mm</span>
+                          </div>
+                          {activeTool === 10 && (
+                            <div className="bg-white border rounded-lg p-3 md:p-4 flex justify-between items-center">
+                              <span className="text-slate-500 font-medium text-xs md:text-sm">Jumlah Pemakanan</span>
+                              <span className="text-base md:text-lg font-bold text-slate-800">{angka(hasil.jumlah_pemakanan)} x</span>
+                            </div>
+                          )}
+                          <div className="bg-[#1e3250] rounded-lg p-4 md:p-6 text-white shadow-md flex flex-col items-center gap-1 text-center">
+                            <span className="font-medium text-slate-200 text-xs md:text-sm">Estimasi Waktu Machining</span>
+                            <span className="text-4xl md:text-5xl font-bold">{angka(hasil.waktu_menit)} <span className="text-xl md:text-2xl font-semibold">menit</span></span>
+                            <span className="text-xs md:text-sm text-slate-300 mt-1">= {angka(hasil.waktu_detik)} detik · {angka(hasil.waktu_jam)} jam</span>
+                          </div>
+                        </>
                       )}
                     </div>
                   )}

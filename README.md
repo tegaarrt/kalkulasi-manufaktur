@@ -1,4 +1,4 @@
-# E-CODAPROVE-26
+# E-CODAPROV-26
 
 Kalkulator PWA. Semua rumus berjalan di perangkat (`lib/kalkulasi.ts`), jadi aplikasi tetap bisa dipakai offline setelah dibuka sekali saat online.
 

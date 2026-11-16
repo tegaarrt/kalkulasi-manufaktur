@@ -17,6 +17,16 @@ export type InputKalkulasi = {
   outDiameter: number;
   massaJenis: number;
   hargaMaterial: number;
+  // Machining
+  qtyLubang: number;
+  dalam: number;
+  diameterPoket: number;
+  panjangPoket: number;
+  lebarPoket: number;
+  putaranPerMm: number;
+  waktuPerMm: number;
+  pemakananPerPass: number;
+  waktuPerPass: number;
 };
 
 // Sama dengan round() Python: nilai yang tepat di tengah dibulatkan ke angka genap.
@@ -32,6 +42,13 @@ export function bulatkan(x: number, digit: number): number {
   if (!genap) return Number(x.toFixed(digit));
   return Number(`${x < 0 ? "-" : ""}${bulat}.${pecahan.slice(0, digit)}`);
 }
+
+// Waktu machining dalam detik, ditampilkan juga dalam menit dan jam.
+const waktuMachining = (detik: number) => ({
+  waktu_detik: bulatkan(detik, 2),
+  waktu_menit: bulatkan(detik / 60, 2),
+  waktu_jam: bulatkan(detik / 3600, 2),
+});
 
 const jamPO = (d: InputKalkulasi) => (d.qtyPO * d.ctPerPcs) / 3600;
 const kwhPerJam = (d: InputKalkulasi) => ((d.ampere * d.volt) / 1000) * d.qtyMesin;
@@ -94,6 +111,34 @@ export function hitung(tool: number, d: InputKalkulasi): Hasil {
     }
     case 7:
       return { total_jam_po: bulatkan(jamPO(d), 2) };
+    case 8: {
+      // Poket bulat: keliling lubang x depth x putaran per mm x qty lubang
+      const bentangan = d.diameterPoket * 3.14;
+      const total = bentangan * d.dalam * d.putaranPerMm * d.qtyLubang;
+      return {
+        bentangan_mm: bulatkan(bentangan, 2),
+        total_length_mm: bulatkan(total, 2),
+        ...waktuMachining(total * d.waktuPerMm),
+      };
+    }
+    case 9: {
+      // Poket kotak: panjang x lebar x depth x qty lubang
+      const total = d.panjangPoket * d.lebarPoket * d.dalam * d.qtyLubang;
+      return {
+        total_length_mm: bulatkan(total, 2),
+        ...waktuMachining(total * d.waktuPerMm),
+      };
+    }
+    case 10: {
+      // Drill: (qty lubang x depth) / pemakanan per langkah x waktu per langkah
+      const total = d.qtyLubang * d.dalam;
+      const jumlahPemakanan = total / d.pemakananPerPass;
+      return {
+        total_length_mm: bulatkan(total, 2),
+        jumlah_pemakanan: bulatkan(jumlahPemakanan, 2),
+        ...waktuMachining(jumlahPemakanan * d.waktuPerPass),
+      };
+    }
     default:
       return {};
   }

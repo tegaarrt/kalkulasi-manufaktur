@@ -1,5 +1,5 @@
 // Ganti versi ini hanya kalau logika service worker berubah.
-const CACHE = "ecodaprove-v1";
+const CACHE = "ecodaprov-v2";
 const HALAMAN = "/";
 const ASET_TETAP = [
   "/logo.png",

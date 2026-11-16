@@ -15,13 +15,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "E-CODAPROVE-26",
+  title: "E-CODAPROV-26",
   description: "Quick Calculation Tools PT Berlindo Mitra Utama",
-  applicationName: "E-CODAPROVE-26",
+  applicationName: "E-CODAPROV-26",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "CODAPROVE",
+    title: "E-CODAPROV-26",
     statusBarStyle: "default",
   },
   icons: {
