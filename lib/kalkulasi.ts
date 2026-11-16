@@ -15,6 +15,7 @@ export type InputKalkulasi = {
   tebal: number;
   panjang: number;
   outDiameter: number;
+  jumlahUnit: number;
   massaJenis: number;
   hargaMaterial: number;
   // Machining
@@ -48,6 +49,15 @@ const waktuMachining = (detik: number) => ({
   waktu_detik: bulatkan(detik, 2),
   waktu_menit: bulatkan(detik / 60, 2),
   waktu_jam: bulatkan(detik / 3600, 2),
+});
+
+// Berat dan harga satu unit, lalu dikalikan jumlah unit.
+const hasilMaterial = (beratUnit: number, d: InputKalkulasi) => ({
+  jumlah_unit: d.jumlahUnit,
+  berat_unit_kg: bulatkan(beratUnit, 2),
+  biaya_unit: bulatkan(beratUnit * d.hargaMaterial, 2),
+  berat_kg: bulatkan(beratUnit * d.jumlahUnit, 2),
+  total_biaya: bulatkan(beratUnit * d.hargaMaterial * d.jumlahUnit, 2),
 });
 
 const jamPO = (d: InputKalkulasi) => (d.qtyPO * d.ctPerPcs) / 3600;
@@ -96,18 +106,12 @@ export function hitung(tool: number, d: InputKalkulasi): Hasil {
     }
     case 5: {
       const berat = (d.lebar * d.tebal * d.panjang * d.massaJenis) / 1_000_000;
-      return {
-        berat_kg: bulatkan(berat, 2),
-        total_biaya: bulatkan(berat * d.hargaMaterial, 2),
-      };
+      return hasilMaterial(berat, d);
     }
     case 6: {
       const keliling = d.outDiameter * 3.14 - d.tebal;
       const berat = (keliling * d.tebal * d.panjang * d.massaJenis) / 1_000_000;
-      return {
-        berat_kg: bulatkan(berat, 2),
-        total_biaya: bulatkan(berat * d.hargaMaterial, 2),
-      };
+      return hasilMaterial(berat, d);
     }
     case 7:
       return { total_jam_po: bulatkan(jamPO(d), 2) };

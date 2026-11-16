@@ -65,6 +65,7 @@ export default function ManufacturingDashboard() {
   const [tebal, setTebal] = useState<number | string>("");
   const [lebar, setLebar] = useState<number | string>("");
   const [outDiameter, setOutDiameter] = useState<number | string>("");
+  const [jumlahUnit, setJumlahUnit] = useState<number | string>(1);
 
   const [machining, setMachining] = useState<IsianMachining>(MACHINING_AWAL);
   // Setting parameter disimpan di perangkat, jadi tetap ada saat aplikasi dibuka lagi.
@@ -130,7 +131,7 @@ export default function ManufacturingDashboard() {
   const resetInputs = () => {
     setQtyMesin(""); setQtyPO(""); setCtPerPcs("");
     setAmpere(""); setVolt(""); setFlowGas("");
-    setPanjang(""); setTebal(""); setLebar(""); setOutDiameter("");
+    setPanjang(""); setTebal(""); setLebar(""); setOutDiameter(""); setJumlahUnit(1);
     setJenisMaterial("SPHC"); setMassaJenis(7.85);
     // Nilai standar machining tetap disimpan, hanya ukuran yang dikosongkan.
     setMachining(lama => ({ ...lama, qtyLubang: "", dalam: "", diameterPoket: "", panjangPoket: "", lebarPoket: "" }));
@@ -151,6 +152,10 @@ export default function ManufacturingDashboard() {
   const hitungKalkulasi = () => {
     const pakaiMesin = activeTool >= 1 && activeTool <= 4;
     const pakaiPO = activeTool === 2 || activeTool === 4 || activeTool === 7;
+    if ((activeTool === 5 || activeTool === 6) && !(Number.isInteger(Number(jumlahUnit)) && Number(jumlahUnit) > 0)) {
+      setPesanError("Jumlah unit harus bilangan bulat, minimal 1.");
+      return;
+    }
     if ((pakaiMesin && !Number.isInteger(Number(qtyMesin))) || (pakaiPO && !Number.isInteger(Number(qtyPO)))) {
       setPesanError("Jumlah unit mesin dan jumlah PO harus bilangan bulat.");
       return;
@@ -178,6 +183,7 @@ export default function ManufacturingDashboard() {
       tebal: Number(tebal),
       panjang: Number(panjang),
       outDiameter: Number(outDiameter),
+      jumlahUnit: Number(jumlahUnit),
       massaJenis: Number(massaJenis),
       hargaMaterial: Number(hargaMaterial),
       qtyLubang: Number(machining.qtyLubang),
@@ -400,6 +406,10 @@ export default function ManufacturingDashboard() {
                     <div className="flex justify-between items-center"><label>Out Diameter (mm)</label><input type="number" value={outDiameter} onChange={e => handleNumber(e.target.value, setOutDiameter)} className="border rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
                   )}
 
+                  {(activeTool === 5 || activeTool === 6) && (
+                    <div className="border-t border-dashed pt-4 mt-2 flex justify-between items-center"><label className="font-semibold text-slate-700">Jumlah (unit)</label><input type="number" min={1} value={jumlahUnit} onChange={e => handleNumber(e.target.value, setJumlahUnit)} className="border border-slate-300 rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
+                  )}
+
                   {(activeTool === 2 || activeTool === 4 || activeTool === 7) && (
                     <div className={activeTool !== 7 ? "border-t border-dashed pt-4 mt-2" : ""}>
                       <div className="flex justify-between items-center mb-2"><label className="font-semibold text-slate-700">Jumlah PO (Pcs)</label><input type="number" value={qtyPO} onChange={e => handleNumber(e.target.value, setQtyPO)} className="border border-slate-300 rounded-md px-3 py-1.5 w-24 md:w-32 text-right" /></div>
@@ -491,13 +501,19 @@ export default function ManufacturingDashboard() {
 
                       {(activeTool === 5 || activeTool === 6) && (
                         <>
-                          <div className="bg-white border rounded-lg p-3 md:p-4 flex justify-between items-center">
-                            <span className="text-slate-500 font-medium text-xs md:text-sm">Total Berat Material</span>
-                            <span className="text-lg md:text-xl font-bold text-slate-800">{hasil.berat_kg} Kg</span>
+                          <div className="bg-white border rounded-lg p-3 md:p-4 flex flex-col gap-1">
+                            <div className="flex justify-between items-center">
+                              <span className="text-slate-500 font-medium text-xs md:text-sm">Total Berat Material</span>
+                              <span className="text-lg md:text-xl font-bold text-slate-800">{angka(hasil.berat_kg)} Kg</span>
+                            </div>
+                            <span className="text-[11px] md:text-xs text-slate-400 text-right">{angka(hasil.berat_unit_kg)} Kg / unit × {angka(hasil.jumlah_unit)} unit</span>
                           </div>
-                          <div className="bg-white border rounded-lg p-3 md:p-4 flex flex-col md:flex-row justify-between md:items-center border-l-4 border-l-purple-500 gap-1">
-                            <span className="text-slate-500 font-medium text-xs md:text-sm">Estimasi Harga Pokok</span>
-                            <span className="text-xl md:text-2xl font-bold text-purple-600">Rp {hasil.total_biaya?.toLocaleString('id-ID')}</span>
+                          <div className="bg-white border rounded-lg p-3 md:p-4 flex flex-col gap-1 border-l-4 border-l-purple-500">
+                            <div className="flex flex-col md:flex-row justify-between md:items-center gap-1">
+                              <span className="text-slate-500 font-medium text-xs md:text-sm">Estimasi Harga Pokok</span>
+                              <span className="text-xl md:text-2xl font-bold text-purple-600">Rp {angka(hasil.total_biaya)}</span>
+                            </div>
+                            <span className="text-[11px] md:text-xs text-slate-400 md:text-right">Rp {angka(hasil.biaya_unit)} / unit</span>
                           </div>
                         </>
                       )}
