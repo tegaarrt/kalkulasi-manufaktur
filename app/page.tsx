@@ -511,22 +511,6 @@ export default function ManufacturingDashboard() {
 
                       {activeTool >= 8 && (
                         <>
-                          {activeTool === 8 && (
-                            <div className="bg-white border rounded-lg p-3 md:p-4 flex justify-between items-center">
-                              <span className="text-slate-500 font-medium text-xs md:text-sm">Bentangan Diameter</span>
-                              <span className="text-base md:text-lg font-bold text-slate-800">{angka(hasil.bentangan_mm)} mm</span>
-                            </div>
-                          )}
-                          <div className="bg-white border rounded-lg p-3 md:p-4 flex justify-between items-center">
-                            <span className="text-slate-500 font-medium text-xs md:text-sm">Total Length</span>
-                            <span className="text-base md:text-lg font-bold text-slate-800">{angka(hasil.total_length_mm)} mm</span>
-                          </div>
-                          {activeTool === 10 && (
-                            <div className="bg-white border rounded-lg p-3 md:p-4 flex justify-between items-center">
-                              <span className="text-slate-500 font-medium text-xs md:text-sm">Jumlah Pemakanan</span>
-                              <span className="text-base md:text-lg font-bold text-slate-800">{angka(hasil.jumlah_pemakanan)} x</span>
-                            </div>
-                          )}
                           <div className="bg-[#1e3250] rounded-lg p-4 md:p-6 text-white shadow-md flex flex-col items-center gap-1 text-center">
                             <span className="font-medium text-slate-200 text-xs md:text-sm">Estimasi Waktu Machining</span>
                             <span className="text-4xl md:text-5xl font-bold">{angka(hasil.waktu_menit)} <span className="text-xl md:text-2xl font-semibold">menit</span></span>
